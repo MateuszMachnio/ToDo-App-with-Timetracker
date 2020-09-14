@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css"
           integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA" crossorigin="anonymous">
+    <script src="js/ApiService.js"></script>
     <script src="js/Task.js"></script>
     <script src="js/Operation.js"></script>
-    <script src="js/DomElements.js"></script>
     <script src="js/DomElements.js"></script>
     <script src="js/app.js"></script>
 </head>
@@ -15,22 +16,26 @@
 
 <section>
     <div class="jumbotron container todo-app">
-        <form class="form-group" class="new-task">
+        <form class="form-group new-task">
             <h2>Add new task</h2>
-            <input type="text" class="form-control" name="title" placeholder="Title">
-            <input type="text" class="form-control" name="description" placeholder="Description">
+            <label>
+                <input type="text" class="form-control" name="title" placeholder="Title">
+            </label>
+            <label>
+                <input type="text" class="form-control" name="description" placeholder="Description">
+            </label>
             <input type="submit" value="Add" class="btn btn-primary"/>
         </form>
 
         <hr />
         <section class="tasks">
-            <!--<section class="task">-->
+            <!--<section class="task" data-id="....">-->
                 <!--<h2>Task1 </h2>-->
                 <!--<ul class="list-group todo">-->
                     <!--<li class="list-group-item active task-description">-->
                         <!--Zrozumieć this w eventach-->
                         <!--<a href="" class="btn btn-secondary float-right">Finish</a>-->
-                        <!--<a href="" class="btn btn-secondary float-right">Add operation</a>-->
+                        <!--<a href="" class="btn btn-secondary float-right add-operation">Add operation</a>-->
                     <!--</li>-->
                     <!--<li class="list-group-item task-operation">-->
                         <!--<form class="form-group" class="new-task">-->
@@ -39,12 +44,12 @@
                         <!--</form>-->
                     <!--</li>-->
 
-                    <!--<li class="list-group-item task-operation">-->
+                    <!--<div class="list-group-item task-operation" data-id="...">-->
                         <!--Operation description-->
                         <!--<a href="" class="btn btn-primary float-right">Start timer</a>-->
                         <!--<a href="" class="btn btn-primary float-right">Add time manually</a>-->
 
-                    <!--</li>-->
+                    <!--</div>-->
 
                     <!--<li class="list-group-item task-operation">-->
                         <!--Operation description-->
@@ -93,11 +98,8 @@
                 <!--</ul>-->
             <!--</section>-->
         </section>
-
-
     </div>
 </section>
-
 
 </body>
 </html>
