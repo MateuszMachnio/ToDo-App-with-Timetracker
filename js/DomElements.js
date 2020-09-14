@@ -8,6 +8,7 @@ class DomElements {
         this.addEventToTaskTitle();
         this.addEventToButtonAddOperation();
         this.addEventToButtonAddToOperationList();
+        this.addEventToButtonAddTimeManually();
     }
 
     loadAll() {
@@ -120,6 +121,28 @@ class DomElements {
             }
             if (targetElement.matches(selector) && divElements.length > 0) {
                 this.deleteOperations(divElements, list);
+            }
+        });
+    }
+
+    changeOperationElement(element) {
+        element.querySelector("a").innerText = "Save";
+        element.querySelector("a").classList.add("btn-success");
+        let inputTime = document.createElement("input");
+        inputTime.type = "text";
+        inputTime.classList.add("float-right");
+        inputTime.name = "time";
+        inputTime.placeholder = "Type in spend time";
+        element.appendChild(inputTime);
+    }
+
+    addEventToButtonAddTimeManually() {
+        let sectionTasks = document.querySelector("section.tasks");
+        sectionTasks.addEventListener("click", e => {
+            let targetElement = e.target;
+            let selector = "a.btn-primary";
+            if (targetElement.matches(selector) && targetElement.innerText === "Add time manually") {
+                this.changeOperationElement(targetElement.parentElement);
             }
         });
     }
