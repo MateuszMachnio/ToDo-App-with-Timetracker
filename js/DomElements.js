@@ -148,14 +148,23 @@ class DomElements {
         buttonAddOperation.appendChild(liElement);
     }
 
+    deleteAddOperationElement(element, parentElement) {
+        parentElement.removeChild(element);
+    }
+
     addEventToButtonAddOperation() {
         let sectionTasks = document.querySelector("section.tasks");
         sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "a.add-operation";
             let ulElement = targetElement.parentElement.parentElement;
-            if (targetElement.matches(selector) && ulElement.querySelectorAll("li.task-operation").length === 0) {
+            let liElement = ulElement.querySelector("li.task-operation");
+            if (targetElement.matches(selector) && liElement === null) {
                 this.createAddOperationElement(ulElement);
+                return;
+            }
+            if (targetElement.matches(selector) && liElement !== null) {
+                this.deleteAddOperationElement(liElement, ulElement);
             }
         });
     }
