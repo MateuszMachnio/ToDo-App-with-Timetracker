@@ -93,24 +93,34 @@ class DomElements {
         taskOperationsElement.appendChild(operationEl);
     }
 
+    deleteOperations(operations, parentElement) {
+        operations.forEach(operation => {
+            parentElement.removeChild(operation);
+        });
+    }
+
     addEventToTaskTitle() {
         let sectionTasks = document.querySelector("section.tasks");
         sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "h2";
             let list = e.target.parentElement.querySelector("ul");
-                if (targetElement.matches(selector) && list.querySelectorAll("div.task-operation").length === 0) {
-                    let taskId = e.target.parentElement.dataset.id;
-                    this.apiService.getOperationsForTask(
-                        taskId,
-                        operations => {
-                            operations.map(operation => {
-                                this.createOperationElement(operation, list);
-                            });
-                        },
-                        error => console.log(error)
-                    );
-                }
+            let divElements = list.querySelectorAll("div.task-operation");
+            if (targetElement.matches(selector) && divElements.length === 0) {
+                let taskId = e.target.parentElement.dataset.id;
+                this.apiService.getOperationsForTask(
+                    taskId,
+                    operations => {
+                        operations.map(operation => {
+                            this.createOperationElement(operation, list);
+                        });},
+                    error => console.log(error)
+                );
+                return;
+            }
+            if (targetElement.matches(selector) && divElements.length > 0) {
+                this.deleteOperations(divElements, list);
+            }
         });
     }
 
