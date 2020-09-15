@@ -1,6 +1,7 @@
 class DomElements {
     constructor() {
         this.appEl = document.querySelector(".todo-app");
+        this.sectionTasks = document.querySelector(".tasks");
         this.apiService = new ApiService();
         //start App
         this.loadAll();
@@ -9,6 +10,7 @@ class DomElements {
         this.addEventToButtonAddOperation();
         this.addEventToButtonAddToOperationList();
         this.addEventToButtonAddTimeManually();
+        this.addEventToButtonSaveTimeSpend();
     }
 
     loadAll() {
@@ -101,8 +103,7 @@ class DomElements {
     }
 
     addEventToTaskTitle() {
-        let sectionTasks = document.querySelector("section.tasks");
-        sectionTasks.addEventListener("click", e => {
+        this.sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "h2";
             let list = e.target.parentElement.querySelector("ul");
@@ -137,12 +138,12 @@ class DomElements {
     }
 
     addEventToButtonAddTimeManually() {
-        let sectionTasks = document.querySelector("section.tasks");
-        sectionTasks.addEventListener("click", e => {
+        this.sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "a.btn-primary";
             if (targetElement.matches(selector) && targetElement.innerText === "Add time manually") {
                 this.changeOperationElement(targetElement.parentElement);
+                e.stopImmediatePropagation();
             }
         });
     }
@@ -176,8 +177,7 @@ class DomElements {
     }
 
     addEventToButtonAddOperation() {
-        let sectionTasks = document.querySelector("section.tasks");
-        sectionTasks.addEventListener("click", e => {
+        this.sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "a.add-operation";
             let ulElement = targetElement.parentElement.parentElement;
@@ -193,8 +193,7 @@ class DomElements {
     }
 
     addEventToButtonAddToOperationList() {
-        let sectionTasks = document.querySelector("section.tasks");
-        sectionTasks.addEventListener("click", e => {
+        this.sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
             let selector = "input.btn";
             let sectionTask = targetElement.parentElement.parentElement.parentElement.parentElement;
@@ -207,11 +206,40 @@ class DomElements {
                         this.createOperationElement(operation, sectionTask.querySelector("ul"));
                     },
                     error => console.log(error));
-                // e.preventDefault();
             }
         });
     }
 
+    changeOperationSavingTime(element, timeSpend) {
+        element.removeChild(element.querySelector("input[name=time]"));
+        let aElementStartTimer = element.querySelector("a.btn-success");
+        aElementStartTimer.classList.remove("btn-success");
+        aElementStartTimer.innerText = "Start timer";
+        let spanElement = document.createElement("span");
+        spanElement.classList.add("badge", "badge-primary", "badge-pill");
+        spanElement.innerText = timeSpend;
+        element.insertBefore(spanElement,aElementStartTimer);
+        let aElementAddTime = aElementStartTimer.cloneNode();
+        aElementAddTime.innerText = "Add time manually";
+        element.appendChild(aElementAddTime);
+    }
 
+    addEventToButtonSaveTimeSpend() {
+        this.sectionTasks.addEventListener("click", e => {
+            let targetElement = e.target;
+            let selector = "a.btn-success";
+            let divElement = targetElement.parentElement;
+            let timeSpend = divElement.querySelector("input[name=time]").value;
+            if (targetElement.matches(selector)) {
+                this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
+                    this.apiService.updateOperation(receivedOperation.timeSpent = timeSpend,
+                        operation => {
+                            this.changeOperationSavingTime(divElement, timeSpend);
+                        },
+                        error => console.log(error));
+                }, error => console.log(error));
+            }
+        });
+    }
 
 }
