@@ -227,7 +227,7 @@ class DomElements {
     addingTimeSpentToOperation(spanElement, timeSpend) {
         let hours = 0;
         if (timeSpend > 59) {
-            hours = timeSpend / 60;
+            hours = Math.floor(timeSpend / 60);
         }
         let minutes = timeSpend % 60;
         let seconds = 0;
@@ -261,10 +261,12 @@ class DomElements {
             if (targetElement.matches(selector)) {
                 let timeSpend = divElement.querySelector("input[name=time]").value;
                 this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
-                    receivedOperation.timeSpent = timeSpend;
+                    console.log(receivedOperation.timeSpent);
+                    receivedOperation.timeSpent += Number(timeSpend);
+                    console.log(receivedOperation.timeSpent);
                     this.apiService.updateOperation(receivedOperation,
                         operation => {
-                            this.changeOperationSavingTime(divElement, timeSpend);
+                            this.changeOperationSavingTime(divElement, receivedOperation.timeSpent);
                         },
                         error => console.log(error));
                 }, error => console.log(error));
