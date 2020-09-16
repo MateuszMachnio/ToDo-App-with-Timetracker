@@ -43,7 +43,6 @@ class ApiService {
         }).then(response => {
             return response.json();
         }).then(responseData => {
-            console.log(responseData);
             if (typeof successCallbackFn === "function") {
                 const newTask = this.createTaskFromResponseData(responseData.data);
                 successCallbackFn(newTask);
@@ -75,8 +74,8 @@ class ApiService {
             }
         });
     }
-    deleteTask(task, successCallbackFn, errorCallbackFn) {
-        fetch(this.url + "/api/tasks/" + task.id, {
+    deleteTask(taskId, successCallbackFn, errorCallbackFn) {
+        fetch(this.url + "/api/tasks/" + taskId, {
             headers: {
                 Authorization: this.apikey,
             },
@@ -85,8 +84,7 @@ class ApiService {
             return response.json();
         }).then(responseData => {
             if (typeof successCallbackFn === "function") {
-                const deleteTask = this.createTaskFromResponseData(responseData.data);
-                successCallbackFn(deleteTask);
+                successCallbackFn();
             }
         }).catch(error => {
             if (typeof errorCallbackFn === "function") {
@@ -134,7 +132,6 @@ class ApiService {
         }).then(response => {
             return response.json();
         }).then(responseData => {
-            console.log(responseData);
             if (typeof successCallbackFn === "function") {
                 const newOperation = this.createOperationFromResponseData(responseData.data);
                 successCallbackFn(newOperation);

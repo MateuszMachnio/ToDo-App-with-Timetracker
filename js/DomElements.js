@@ -11,6 +11,7 @@ class DomElements {
         this.addEventToButtonAddToOperationList();
         this.addEventToButtonAddTimeManually();
         this.addEventToButtonSaveTimeSpend();
+        this.addEventToButtonFinishTask();
     }
 
     loadAll() {
@@ -78,6 +79,8 @@ class DomElements {
                 task,
                 (savedTask) => {
                     this.createTaskElement(savedTask);
+                    titleEl.value = "";
+                    descriptionEl.value = "";
                 },
                 error => console.log(error)
             );
@@ -93,10 +96,10 @@ class DomElements {
         aELementAddTime.classList.add("btn", "btn-primary", "float-right");
         aELementAddTime.innerText = "Add time manually";
         operationEl.appendChild(aELementAddTime);
+        let aElementStartTimer = aELementAddTime.cloneNode();
+        aElementStartTimer.innerText = "Start timer";
+        operationEl.insertBefore(aElementStartTimer, aELementAddTime);
         if (operation.timeSpent !== 0) {
-            let aElementStartTimer = aELementAddTime.cloneNode();
-            aElementStartTimer.innerText = "Start timer";
-            operationEl.insertBefore(aElementStartTimer, aELementAddTime);
             let spanElement = document.createElement("span");
             spanElement.classList.add("badge", "badge-primary", "badge-pill");
             this.addingTimeSpentToOperation(spanElement, operation.timeSpent);
@@ -207,6 +210,36 @@ class DomElements {
         });
     }
 
+    deleteElementsFromElement(elements, parentElement) {
+        elements.forEach(element => {
+            parentElement.removeChild(element);
+        });
+    }
+
+    addEventToButtonFinishTask() {
+        this.sectionTasks.addEventListener("click", e => {
+            let targetElement = e.target;
+            let selector = "a.close-task";
+            if (targetElement.matches(selector)) {
+                let ulElement = targetElement.parentElement.parentElement;
+                let childrenOfUlElement = ulElement.children;
+                let sectionTask = ulElement.parentElement;
+                this.apiService.deleteTask(sectionTask.dataset.id, () => {
+                    if (ulElement.querySelector("form") !== null) {
+                        let parentOfFormElement = ulElement.querySelector("form").parentElement;
+                        parentOfFormElement.parentElement.removeChild(parentOfFormElement);
+                    }
+                    for (let i = 0; i < childrenOfUlElement.length; i++) {
+                        let aElementsOfChildOfUlElement = childrenOfUlElement[i].querySelectorAll("a");
+                        let inputElementsOfChildOfUlElement = childrenOfUlElement[i].querySelectorAll("input");
+                        this.deleteElementsFromElement(aElementsOfChildOfUlElement, childrenOfUlElement[i]);
+                        this.deleteElementsFromElement(inputElementsOfChildOfUlElement, childrenOfUlElement[i]);
+                    }
+                }, error => console.log(error));
+            }
+        });
+    }
+
     addEventToButtonAddToOperationList() {
         this.sectionTasks.addEventListener("click", e => {
             let targetElement = e.target;
@@ -217,7 +250,8 @@ class DomElements {
                 let operation = new Operation(targetElement.parentElement.querySelector(".form-control").value);
                 this.apiService.saveOperationToTask(sectionTask.dataset.id, operation,
                     newOperation => {
-                        this.createOperationElement(operation, sectionTask.querySelector("ul"));
+                        this.createOperationElement(newOperation, sectionTask.querySelector("ul"));
+                        targetElement.parentElement.querySelector(".form-control").value = "";
                     },
                     error => console.log(error));
             }
@@ -261,9 +295,7 @@ class DomElements {
             if (targetElement.matches(selector)) {
                 let timeSpend = divElement.querySelector("input[name=time]").value;
                 this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
-                    console.log(receivedOperation.timeSpent);
                     receivedOperation.timeSpent += Number(timeSpend);
-                    console.log(receivedOperation.timeSpent);
                     this.apiService.updateOperation(receivedOperation,
                         operation => {
                             this.changeOperationSavingTime(divElement, receivedOperation.timeSpent);
