@@ -194,10 +194,11 @@ class DomElements {
     }
 
     timer(element, timeSpend) {
-        this.intervalID = setInterval(() => {
+        const intervalID = setInterval(() => {
             this.addingTimeSpentToOperation(element, timeSpend);
             timeSpend++;
         }, 1000);
+        element.dataset.intervalID = "" + intervalID;
     }
 
     startTimer(element) {
@@ -213,15 +214,13 @@ class DomElements {
             let targetElement = e.target;
             let selector = "a.btn-warning";
             if (targetElement.matches(selector)) {
-                clearInterval(this.intervalID);
-                // console.log(this.timer());
-
+                let divElement = targetElement.parentElement;
+                clearInterval(Number(divElement.dataset.intervalID));
                 let spanElement = targetElement.parentElement.querySelector("span");
                 let spanText = spanElement.innerText;
                 let spanTextReplaced = spanText.replace(/[a-z]/g,"");
                 let spanSplited = spanTextReplaced.split(" ");
                 let timeSpend = Number(spanSplited[0]) * 3600 + Number(spanSplited[1]) * 60 + Number(spanSplited[2]);
-                let divElement = targetElement.parentElement;
                 this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
                     receivedOperation.timeSpent = timeSpend;
                     this.apiService.updateOperation(receivedOperation,
