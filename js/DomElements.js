@@ -12,6 +12,7 @@ class DomElements {
         this.addEventToButtonAddTimeManually();
         this.addEventToButtonSaveTimeSpend();
         this.addEventToButtonFinishTask();
+        this.addEventToButtonStartTimer();
     }
 
     loadAll() {
@@ -102,8 +103,8 @@ class DomElements {
         if (operation.timeSpent !== 0) {
             let spanElement = document.createElement("span");
             spanElement.classList.add("badge", "badge-primary", "badge-pill");
-            this.addingTimeSpentToOperation(spanElement, operation.timeSpent);
             operationEl.insertBefore(spanElement,aElementStartTimer);
+            this.addingTimeSpentToOperation(operationEl, operation.timeSpent);
         }
         taskOperationsElement.appendChild(operationEl);
     }
@@ -140,13 +141,13 @@ class DomElements {
         });
     }
 
-    changeOperationElement(element) {
+    changeOperationElementAddingTime(element) {
         element.querySelector("a").innerText = "Save";
         element.querySelector("a").classList.add("btn-success");
         let aElements = element.querySelectorAll("a");
-        if (aElements.length === 2) {
+        // if (aElements.length === 2) {
             element.removeChild(aElements[1]);
-        }
+        // }
         let inputTime = document.createElement("input");
         inputTime.type = "text";
         inputTime.classList.add("float-right");
@@ -160,10 +161,70 @@ class DomElements {
             let targetElement = e.target;
             let selector = "a.btn-primary";
             if (targetElement.matches(selector) && targetElement.innerText === "Add time manually") {
-                this.changeOperationElement(targetElement.parentElement);
+                this.changeOperationElementAddingTime(targetElement.parentElement);
                 e.stopImmediatePropagation();
             }
         });
+    }
+
+    addEventToButtonStartTimer() {
+        this.sectionTasks.addEventListener("click", e => {
+            let targetElement = e.target;
+            let selector = "a.btn-primary";
+            if (targetElement.matches(selector) && targetElement.innerText === "Start timer") {
+                this.changeOperationElementStartTimer(targetElement.parentElement);
+                e.stopImmediatePropagation();
+            }
+        });
+    }
+
+    changeOperationElementStartTimer(element) {
+        let aElement = element.querySelector("a");
+        aElement.innerText = "Stop timer";
+        aElement.classList.add("btn-warning");
+        let aElements = element.querySelectorAll("a");
+        element.removeChild(aElements[1]);
+        if (element.querySelector("span") === null) {
+            let spanElement = document.createElement("span");
+            spanElement.classList.add("badge", "badge-primary", "badge-pill");
+            element.insertBefore(spanElement,aElement);
+        }
+        this.startTimer(element);
+    }
+
+    startTimer(element) {
+        this.apiService.getOperation(element.dataset.id, receivedOperation => {
+            let timeSpend = receivedOperation.timeSpent;
+            let timer = setInterval(() => {
+                this.addingTimeSpentToOperation(element, timeSpend);
+                timeSpend++;
+            },1000);
+                this.sectionTasks.addEventListener("click", e => {
+                    let targetElement = e.target;
+                    let selector = "a.btn-warning";
+                    if (targetElement.matches(selector)) {
+                        clearInterval(timer);
+                        receivedOperation.timeSpent = timeSpend;
+                        this.apiService.updateOperation(receivedOperation,
+                       operation => {
+                       this.changeOperationStopTimer(element, operation.timeSpent);
+                       e.stopImmediatePropagation();
+                       },
+                     error => console.log(error));
+                    }
+                });
+        }, error => console.log(error)
+        );
+    }
+
+    changeOperationStopTimer(element, timeSpend) {
+        let aElement = element.querySelector("a");
+        aElement.innerText = "Start timer";
+        aElement.classList.remove("btn-warning");
+        let newAElement = aElement.cloneNode();
+        newAElement.innerText = "Add time manually";
+        element.appendChild(newAElement);
+        this.addingTimeSpentToOperation(element, timeSpend);
     }
 
     createAddOperationElement(buttonAddOperation) {
@@ -254,19 +315,20 @@ class DomElements {
                         parentOfFormElement.parentElement.removeChild(parentOfFormElement);
                         this.createOperationElement(newOperation, sectionTask.querySelector("ul"));
                     },
-                    error => console.log(error));
+                    error => console.log(error)
+                );
             }
         });
     }
 
-    addingTimeSpentToOperation(spanElement, timeSpend) {
+    addingTimeSpentToOperation(element, timeSpend) {
         let hours = 0;
-        if (timeSpend > 59) {
-            hours = Math.floor(timeSpend / 60);
+        if (timeSpend > 3599) {
+            hours = Math.floor(timeSpend / 3600);
         }
-        let minutes = timeSpend % 60;
-        let seconds = 0;
-        spanElement.innerText = hours + "h " + minutes + "m " + seconds + "s";
+        let minutes = Math.floor(timeSpend / 60) - (hours * 60);
+        let seconds = timeSpend % 60;
+        element.querySelector("span").innerText = hours + "h " + minutes + "m " + seconds + "s";
     }
 
     changeOperationSavingTime(element, timeSpend) {
@@ -276,13 +338,13 @@ class DomElements {
         aElementStartTimer.innerText = "Start timer";
         let spanElement = document.createElement("span");
         spanElement.classList.add("badge", "badge-primary", "badge-pill");
-        this.addingTimeSpentToOperation(spanElement, timeSpend);
         let oldSpanElement = element.querySelector("span");
         if (oldSpanElement === null) {
             element.insertBefore(spanElement, aElementStartTimer);
         } else {
             element.replaceChild(spanElement, oldSpanElement);
         }
+        this.addingTimeSpentToOperation(element, timeSpend);
         let aElementAddTime = aElementStartTimer.cloneNode();
         aElementAddTime.innerText = "Add time manually";
         element.appendChild(aElementAddTime);
@@ -296,10 +358,11 @@ class DomElements {
             if (targetElement.matches(selector)) {
                 let timeSpend = divElement.querySelector("input[name=time]").value;
                 this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
-                    receivedOperation.timeSpent += Number(timeSpend);
+                    receivedOperation.timeSpent += Number(timeSpend*60);
                     this.apiService.updateOperation(receivedOperation,
                         operation => {
-                            this.changeOperationSavingTime(divElement, receivedOperation.timeSpent);
+                            this.changeOperationSavingTime(divElement, operation.timeSpent);
+                            e.stopImmediatePropagation();
                         },
                         error => console.log(error));
                 }, error => console.log(error));
