@@ -13,6 +13,7 @@ class DomElements {
         this.addEventToButtonSaveTimeSpend();
         this.addEventToButtonFinishTask();
         this.addEventToButtonStartTimer();
+        this.addEventToButtonStopTimer()
     }
 
     loadAll() {
@@ -192,29 +193,46 @@ class DomElements {
         this.startTimer(element);
     }
 
+    timer(element, timeSpend) {
+        this.intervalID = setInterval(() => {
+            this.addingTimeSpentToOperation(element, timeSpend);
+            timeSpend++;
+        }, 1000);
+    }
+
     startTimer(element) {
         this.apiService.getOperation(element.dataset.id, receivedOperation => {
             let timeSpend = receivedOperation.timeSpent;
-            let timer = setInterval(() => {
-                this.addingTimeSpentToOperation(element, timeSpend);
-                timeSpend++;
-            },1000);
-                this.sectionTasks.addEventListener("click", e => {
-                    let targetElement = e.target;
-                    let selector = "a.btn-warning";
-                    if (targetElement.matches(selector)) {
-                        clearInterval(timer);
-                        receivedOperation.timeSpent = timeSpend;
-                        this.apiService.updateOperation(receivedOperation,
-                       operation => {
-                       this.changeOperationStopTimer(element, operation.timeSpent);
-                       e.stopImmediatePropagation();
-                       },
-                     error => console.log(error));
-                    }
-                });
+                this.timer(element,timeSpend);
         }, error => console.log(error)
         );
+    }
+
+    addEventToButtonStopTimer() {
+        this.sectionTasks.addEventListener("click", e => {
+            let targetElement = e.target;
+            let selector = "a.btn-warning";
+            if (targetElement.matches(selector)) {
+                clearInterval(this.intervalID);
+                // console.log(this.timer());
+
+                let spanElement = targetElement.parentElement.querySelector("span");
+                let spanText = spanElement.innerText;
+                let spanTextReplaced = spanText.replace(/[a-z]/g,"");
+                let spanSplited = spanTextReplaced.split(" ");
+                let timeSpend = Number(spanSplited[0]) * 3600 + Number(spanSplited[1]) * 60 + Number(spanSplited[2]);
+                let divElement = targetElement.parentElement;
+                this.apiService.getOperation(divElement.dataset.id, receivedOperation => {
+                    receivedOperation.timeSpent = timeSpend;
+                    this.apiService.updateOperation(receivedOperation,
+                        operation => {
+                            this.changeOperationStopTimer(divElement, operation.timeSpent);
+                            e.stopImmediatePropagation();
+                        },
+                        error => console.log(error));
+                }, error => console.log(error));
+            }
+        });
     }
 
     changeOperationStopTimer(element, timeSpend) {
