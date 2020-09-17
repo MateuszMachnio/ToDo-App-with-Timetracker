@@ -151,7 +151,7 @@ class DomElements {
         inputTime.type = "text";
         inputTime.classList.add("float-right");
         inputTime.name = "time";
-        inputTime.placeholder = "Type in spend time";
+        inputTime.placeholder = "Type in spend minutes";
         element.appendChild(inputTime);
     }
 
@@ -245,13 +245,14 @@ class DomElements {
             let targetElement = e.target;
             let selector = "input.btn";
             let sectionTask = targetElement.parentElement.parentElement.parentElement.parentElement;
+            let parentOfFormElement = targetElement.parentElement.parentElement;
             if (targetElement.matches(selector)) {
                 e.preventDefault();
                 let operation = new Operation(targetElement.parentElement.querySelector(".form-control").value);
                 this.apiService.saveOperationToTask(sectionTask.dataset.id, operation,
                     newOperation => {
+                        parentOfFormElement.parentElement.removeChild(parentOfFormElement);
                         this.createOperationElement(newOperation, sectionTask.querySelector("ul"));
-                        targetElement.parentElement.querySelector(".form-control").value = "";
                     },
                     error => console.log(error));
             }
