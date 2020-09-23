@@ -3,7 +3,7 @@
 It is a project implemented after passing the fourth module of the course in CodersLab. \
 The fourth module was focused on __JavaScript__.
 ## What programme is that?
-The application allows to add tasks to be performed by the user. User can add an operation to each task. \
+The application allows to add tasks to be performed by the user. User can add operations to each task. \
 For each operation, he can manually assign the time spent on the implementation of a given operation, which is each time added to the time he have already spent on the implementation of the operation. \
 User can also start a timer at the beginning of performing an operation. It will count the time spent on the implementation of a given operation. \
 Tasks can be deleted.
